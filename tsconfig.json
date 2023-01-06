@@ -2,7 +2,9 @@
   "compilerOptions": {
     "moduleResolution": "Node",
     "module": "es2022",
-    "target": "ES2017"
+    "target": "ES2017",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true
   },
   "include": [
     "node_modules/@violentmonkey/types"

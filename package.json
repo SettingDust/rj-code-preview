@@ -1,18 +1,26 @@
 {
   "name": "rj-code-preview",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "3.0.1",
+  "description": "Make RJ code great again!",
+  "main": "dist/rj-code-preview.user.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "tsx esbuild.ts -w",
+    "build": "tsx esbuild.ts"
   },
   "keywords": [],
-  "author": "",
+  "author": "SettingDust",
   "license": "ISC",
   "dependencies": {
+    "@types/mustache": "^4.2.2",
+    "@types/node": "^18.11.18",
+    "@userscripters/generate-headers": "^3.4.0",
     "@violentmonkey/types": "^0.1.5",
+    "delegate-it": "^5.0.0",
     "esbuild": "^0.16.14",
-    "esbuild-serve": "^1.0.1",
+    "eslint": "^8.31.0",
+    "mustache": "^4.2.0",
+    "prettier": "^2.8.1",
     "tsx": "^3.12.1",
     "typescript": "^4.9.4"
   }
