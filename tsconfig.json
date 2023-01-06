@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "Node",
+    "module": "es2022",
+    "target": "ES2017"
+  },
+  "include": [
+    "node_modules/@violentmonkey/types"
+  ]
+}

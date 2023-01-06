@@ -1,0 +1,15 @@
+// ==UserScript==
+// @name           rj-code-preview
+// @author         SettingDust
+// @description    Make RJ code great again!
+// @grant          GM_addElement
+// @grant          GM_addStyle
+// @grant          GM_xmlhttpRequest
+// @grant          GM_setValue
+// @grant          GM_getValue
+// @inject-into    auto
+// @match          *://*/*
+// @namespace      SettingDust
+// @run-at         document-start
+// @version        3.0.0
+// ==/UserScript==
