@@ -3,7 +3,6 @@
 // @author         SettingDust
 // @description    Make RJ code great again!
 // @grant          GM_addElement
-// @grant          GM_addStyle
 // @grant          GM_xmlhttpRequest
 // @grant          GM_setValue
 // @grant          GM_getValue
@@ -11,7 +10,7 @@
 // @match          *://*/*
 // @namespace      SettingDust
 // @run-at         document-end
-// @version        3.0.3
+// @version        3.0.4
 // ==/UserScript==
 
 // src/fetch-rj.ts
@@ -21,54 +20,61 @@ var productPage = (rj) => `https://www.dlsite.com/maniax/work/=/product_id/${rj}
 };
 function productInfo(rj) {
   return new Promise((resolve, reject) => {
-    let cache = GM_getValue(`${rj} product`);
-    cache && (console.debug("[rj-code-preview/product/cached]"), resolve(cache)), GM_xmlhttpRequest({
+    GM_xmlhttpRequest({
       url: `https://www.dlsite.com/maniax/api/=/product.json?workno=${rj}`,
       responseType: "json",
       onload: function(resp) {
-        resp.readyState === 4 && resp.status === 200 ? (GM_setValue(`${rj} product`, resp.response[0]), console.debug("[rj-code-preview/product]", resp.response[0])) : reject(resp);
+        resp.readyState === 4 && resp.status === 200 ? (resolve(resp.response[0]), console.debug("[rj-code-preview/product]", resp.response[0])) : reject(resp);
       }
     });
   });
 }
 function productRatingInfo(rj) {
   return new Promise((resolve, reject) => {
-    let cache = GM_getValue(`${rj} rating`);
-    cache && (console.debug("[rj-code-preview/rating/cached]"), resolve(cache)), GM_xmlhttpRequest({
+    GM_xmlhttpRequest({
       url: `https://www.dlsite.com/maniax/product/info/ajax?product_id=${rj}`,
       responseType: "json",
       onload: function(resp) {
-        resp.readyState === 4 && resp.status === 200 ? (GM_setValue(`${rj} rating`, resp.response[rj]), console.debug("[rj-code-preview/rating]", resp.response[rj])) : reject(resp);
+        resp.readyState === 4 && resp.status === 200 ? (resolve(resp.response[rj]), console.debug("[rj-code-preview/rating]", resp.response[rj])) : reject(resp);
       }
     });
   });
 }
-async function fetch_rj_default(rj) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x;
-  let product$ = productInfo(rj), rating = await productRatingInfo(rj), product = await product$;
-  return {
-    name: product.work_name,
-    image: (_a = product.image_main) == null ? void 0 : _a.url,
-    type: product.work_type_string,
-    group: product.maker_name,
-    date: product.regist_date,
-    series: product.title_name,
-    age: (_b = agings[product.age_category_string]) != null ? _b : product.age_category_string,
-    voices: (_d = (_c = product.creaters) == null ? void 0 : _c.voice_by) == null ? void 0 : _d.map((it) => it.name),
-    illusts: (_f = (_e = product.creaters) == null ? void 0 : _e.illust_by) == null ? void 0 : _f.map((it) => it.name),
-    scenarios: (_h = (_g = product.creaters) == null ? void 0 : _g.scenario_by) == null ? void 0 : _h.map((it) => it.name),
-    creators: (_j = (_i = product.creaters) == null ? void 0 : _i.created_by) == null ? void 0 : _j.map((it) => it.name),
-    musics: (_l = (_k = product.creaters) == null ? void 0 : _k.music_by) == null ? void 0 : _l.map((it) => it.name),
-    hasCreators: (_n = (_m = product.creaters) == null ? void 0 : _m.created_by) == null ? void 0 : _n.length,
-    hasScenarios: (_p = (_o = product.creaters) == null ? void 0 : _o.scenario_by) == null ? void 0 : _p.length,
-    hasIllusts: (_r = (_q = product.creaters) == null ? void 0 : _q.illust_by) == null ? void 0 : _r.length,
-    hasVoices: (_t = (_s = product.creaters) == null ? void 0 : _s.voice_by) == null ? void 0 : _t.length,
-    hasMusics: (_v = (_u = product.creaters) == null ? void 0 : _u.music_by) == null ? void 0 : _v.length,
-    tags: (_w = product.genres) == null ? void 0 : _w.map((it) => it.name),
-    hasTags: (_x = product.genres) == null ? void 0 : _x.length,
-    rating: rating.rate_average_2dp,
-    sale: rating.dl_count
-  };
+function fetch_rj_default(rj) {
+  return new Promise((resolve, reject) => {
+    Promise.all([productInfo(rj), productRatingInfo(rj)]).then(
+      ([product, rating]) => {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x;
+        return {
+          name: product.work_name,
+          image: (_a = product.image_main) == null ? void 0 : _a.url,
+          type: product.work_type_string,
+          group: product.maker_name,
+          date: product.regist_date,
+          series: product.title_name,
+          age: (_b = agings[product.age_category_string]) != null ? _b : product.age_category_string,
+          voices: (_d = (_c = product.creaters) == null ? void 0 : _c.voice_by) == null ? void 0 : _d.map((it) => it.name),
+          illusts: (_f = (_e = product.creaters) == null ? void 0 : _e.illust_by) == null ? void 0 : _f.map((it) => it.name),
+          scenarios: (_h = (_g = product.creaters) == null ? void 0 : _g.scenario_by) == null ? void 0 : _h.map((it) => it.name),
+          creators: (_j = (_i = product.creaters) == null ? void 0 : _i.created_by) == null ? void 0 : _j.map((it) => it.name),
+          musics: (_l = (_k = product.creaters) == null ? void 0 : _k.music_by) == null ? void 0 : _l.map((it) => it.name),
+          hasCreators: (_n = (_m = product.creaters) == null ? void 0 : _m.created_by) == null ? void 0 : _n.length,
+          hasScenarios: (_p = (_o = product.creaters) == null ? void 0 : _o.scenario_by) == null ? void 0 : _p.length,
+          hasIllusts: (_r = (_q = product.creaters) == null ? void 0 : _q.illust_by) == null ? void 0 : _r.length,
+          hasVoices: (_t = (_s = product.creaters) == null ? void 0 : _s.voice_by) == null ? void 0 : _t.length,
+          hasMusics: (_v = (_u = product.creaters) == null ? void 0 : _u.music_by) == null ? void 0 : _v.length,
+          tags: (_w = product.genres) == null ? void 0 : _w.map((it) => it.name),
+          hasTags: (_x = product.genres) == null ? void 0 : _x.length,
+          rating: rating.rate_average_2dp,
+          sale: rating.dl_count
+        };
+      }
+    ).then((it) => {
+      GM_setValue(rj, it), resolve(it);
+    }).catch(reject);
+    let cache = GM_getValue(rj);
+    cache && (console.debug(`[rj-code-preview/cached/${rj}]`), resolve(cache));
+  });
 }
 
 // src/hack-rj-code.ts

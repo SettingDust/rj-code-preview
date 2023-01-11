@@ -6,7 +6,7 @@ export default await generate('violentmonkey', {
   output: 'dist/header.txt',
   namespace: 'SettingDust',
   matches: ['*://*/*'],
-  grants: ['style', 'fetch', 'set', 'get'],
+  grants: ['fetch', 'set', 'get'],
   inject: 'auto',
   // @ts-ignore
   custom: ['grant GM_addElement'],

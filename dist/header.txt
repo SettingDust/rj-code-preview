@@ -3,7 +3,6 @@
 // @author         SettingDust
 // @description    Make RJ code great again!
 // @grant          GM_addElement
-// @grant          GM_addStyle
 // @grant          GM_xmlhttpRequest
 // @grant          GM_setValue
 // @grant          GM_getValue
@@ -11,5 +10,5 @@
 // @match          *://*/*
 // @namespace      SettingDust
 // @run-at         document-end
-// @version        3.0.3
+// @version        3.0.4
 // ==/UserScript==
