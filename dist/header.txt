@@ -11,5 +11,5 @@
 // @match          *://*/*
 // @namespace      SettingDust
 // @run-at         document-start
-// @version        3.0.1
+// @version        3.0.2
 // ==/UserScript==

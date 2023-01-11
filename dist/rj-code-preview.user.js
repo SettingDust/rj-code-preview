@@ -11,7 +11,7 @@
 // @match          *://*/*
 // @namespace      SettingDust
 // @run-at         document-start
-// @version        3.0.1
+// @version        3.0.2
 // ==/UserScript==
 var __defProp = Object.defineProperty;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -27,11 +27,11 @@ var __export = (target, all) => {
 function productInfo(rj) {
   return new Promise((resolve, reject) => {
     let cache = GM_getValue(`${rj} product`);
-    cache && (console.debug("[rj-code-preview/product/cache]"), resolve(cache)), GM_xmlhttpRequest({
+    cache && (console.debug("[rj-code-preview/product/cached]"), resolve(cache)), GM_xmlhttpRequest({
       url: `https://www.dlsite.com/maniax/api/=/product.json?workno=${rj}`,
       responseType: "json",
       onload: function(resp) {
-        resp.readyState === 4 && resp.status === 200 ? (GM_setValue(`${rj} product`, resp.response[0]), console.debug("[rj-code-preview/product]", resp.response[0]), resolve(resp.response[0])) : reject(resp);
+        resp.readyState === 4 && resp.status === 200 ? (GM_setValue(`${rj} product`, resp.response[0]), console.debug("[rj-code-preview/product]", resp.response[0])) : reject(resp);
       }
     });
   });
@@ -39,17 +39,17 @@ function productInfo(rj) {
 function productRatingInfo(rj) {
   return new Promise((resolve, reject) => {
     let cache = GM_getValue(`${rj} rating`);
-    cache && (console.debug("[rj-code-preview/rating/cache]"), resolve(cache)), GM_xmlhttpRequest({
+    cache && (console.debug("[rj-code-preview/rating/cached]"), resolve(cache)), GM_xmlhttpRequest({
       url: `https://www.dlsite.com/maniax/product/info/ajax?product_id=${rj}`,
       responseType: "json",
       onload: function(resp) {
-        resp.readyState === 4 && resp.status === 200 ? (GM_setValue(`${rj} rating`, resp.response[rj]), console.debug("[rj-code-preview/rating]", resp.response[rj]), resolve(resp.response[rj])) : reject(resp);
+        resp.readyState === 4 && resp.status === 200 ? (GM_setValue(`${rj} rating`, resp.response[rj]), console.debug("[rj-code-preview/rating]", resp.response[rj])) : reject(resp);
       }
     });
   });
 }
 async function fetch_rj_default(rj) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x;
   let product$ = productInfo(rj), rating = await productRatingInfo(rj), product = await product$;
   return {
     name: product.work_name,
@@ -58,26 +58,29 @@ async function fetch_rj_default(rj) {
     group: product.maker_name,
     date: product.regist_date,
     series: product.title_name,
-    age: product.age_category_string,
-    voices: (_c = (_b = product.creaters) == null ? void 0 : _b.voice_by) == null ? void 0 : _c.map((it) => it.name),
-    illusts: (_e = (_d = product.creaters) == null ? void 0 : _d.illust_by) == null ? void 0 : _e.map((it) => it.name),
-    scenarios: (_g = (_f = product.creaters) == null ? void 0 : _f.scenario_by) == null ? void 0 : _g.map((it) => it.name),
-    creators: (_i = (_h = product.creaters) == null ? void 0 : _h.created_by) == null ? void 0 : _i.map((it) => it.name),
-    musics: (_k = (_j = product.creaters) == null ? void 0 : _j.music_by) == null ? void 0 : _k.map((it) => it.name),
-    hasCreators: (_m = (_l = product.creaters) == null ? void 0 : _l.created_by) == null ? void 0 : _m.length,
-    hasScenarios: (_o = (_n = product.creaters) == null ? void 0 : _n.scenario_by) == null ? void 0 : _o.length,
-    hasIllusts: (_q = (_p = product.creaters) == null ? void 0 : _p.illust_by) == null ? void 0 : _q.length,
-    hasVoices: (_s = (_r = product.creaters) == null ? void 0 : _r.voice_by) == null ? void 0 : _s.length,
-    hasMusics: (_u = (_t = product.creaters) == null ? void 0 : _t.music_by) == null ? void 0 : _u.length,
-    tags: (_v = product.genres) == null ? void 0 : _v.map((it) => it.name),
-    hasTags: (_w = product.genres) == null ? void 0 : _w.length,
+    age: (_b = agings[product.age_category_string]) != null ? _b : product.age_category_string,
+    voices: (_d = (_c = product.creaters) == null ? void 0 : _c.voice_by) == null ? void 0 : _d.map((it) => it.name),
+    illusts: (_f = (_e = product.creaters) == null ? void 0 : _e.illust_by) == null ? void 0 : _f.map((it) => it.name),
+    scenarios: (_h = (_g = product.creaters) == null ? void 0 : _g.scenario_by) == null ? void 0 : _h.map((it) => it.name),
+    creators: (_j = (_i = product.creaters) == null ? void 0 : _i.created_by) == null ? void 0 : _j.map((it) => it.name),
+    musics: (_l = (_k = product.creaters) == null ? void 0 : _k.music_by) == null ? void 0 : _l.map((it) => it.name),
+    hasCreators: (_n = (_m = product.creaters) == null ? void 0 : _m.created_by) == null ? void 0 : _n.length,
+    hasScenarios: (_p = (_o = product.creaters) == null ? void 0 : _o.scenario_by) == null ? void 0 : _p.length,
+    hasIllusts: (_r = (_q = product.creaters) == null ? void 0 : _q.illust_by) == null ? void 0 : _r.length,
+    hasVoices: (_t = (_s = product.creaters) == null ? void 0 : _s.voice_by) == null ? void 0 : _t.length,
+    hasMusics: (_v = (_u = product.creaters) == null ? void 0 : _u.music_by) == null ? void 0 : _v.length,
+    tags: (_w = product.genres) == null ? void 0 : _w.map((it) => it.name),
+    hasTags: (_x = product.genres) == null ? void 0 : _x.length,
     rating: rating.rate_average_2dp,
     sale: rating.dl_count
   };
 }
-var productPage, init_fetch_rj = __esm({
+var productPage, agings, init_fetch_rj = __esm({
   "src/fetch-rj.ts"() {
-    productPage = (rj) => `https://www.dlsite.com/maniax/work/=/product_id/${rj}.html`;
+    productPage = (rj) => `https://www.dlsite.com/maniax/work/=/product_id/${rj}.html`, agings = {
+      adult: "18 \u7981",
+      general: "\u5168\u5E74\u9F84"
+    };
   }
 });
 
@@ -487,16 +490,20 @@ __export(popup_exports, {
   currentWork: () => currentWork,
   default: () => initPopup
 });
-async function show(rj, x, y) {
+async function show(x, y) {
   let popup = document.getElementById("rj-popup");
-  currentWork = await fetch_rj_default(rj), console.debug("[rj-code-preview/work]", currentWork);
-  let rendered = mustache_default.render(template, currentWork, null, {
-    escape: (it) => it
-  });
-  console.debug("[rj-code-preview/rendered]", rendered), popup.innerHTML = rendered, move(x, y), popup.getElementsByTagName("img").item(0).onload = () => move(x, y);
+  if (currentWork = await fetch_rj_default(currentRj), console.debug("[rj-code-preview/work]", currentWork), !hided) {
+    let rendered = mustache_default.render(template, currentWork, null, {
+      escape: (it) => it
+    });
+    console.debug("[rj-code-preview/rendered]", rendered), popup.innerHTML = rendered, move(x, y);
+    let img = popup.getElementsByTagName("img").item(0);
+    img.onload = () => move(x, y), img.onerror = () => move(x, y);
+  }
+  hided = !1;
 }
 function hide() {
-  currentWork = void 0, document.getElementById("rj-popup").innerHTML = "";
+  hided = !0, currentRj = void 0, currentWork = void 0, document.getElementById("rj-popup").innerHTML = "";
 }
 function move(x, y) {
   let popup = document.getElementById("rj-popup");
@@ -540,15 +547,15 @@ function initPopup() {
     line-height: 1;
   }`);
 }
-var currentWork, linkSelector, template, init_popup = __esm({
+var linkSelector, template, currentWork, currentRj, hided, init_popup = __esm({
   "src/popup.ts"() {
     init_hack_rj_code();
     init_fetch_rj();
     init_mustache();
     init_delegate_it();
     linkSelector = `a.${RJ_CODE_LINK_CLASS}`, template = `
-  <img src='{{ image }}'>
-  <div class='info'>
+  <img src="{{ image }}">
+  <div class="info">
     <h3>{{ name }}</h3>
     {{ #rating }}<p><span>\u8BC4\u4EF7\uFF1A</span><span>{{ rating }}</span></p>{{ /rating }}
     {{ #sale }}<p><span>\u8D29\u5356\u6570\uFF1A</span><span>{{ sale }}</span></p>{{ /sale }}
@@ -564,21 +571,17 @@ var currentWork, linkSelector, template, init_popup = __esm({
     {{ #type }}<p><span>\u4F5C\u54C1\u7C7B\u578B\uFF1A</span><span>{{ type }}</span></p>{{ /type }}
     {{ #hasTags }}<p><span>\u5206\u7C7B\uFF1A</span>{{ #tags }}<span>{{ . }} </span>{{ /tags }}</p>{{ /hasTags }}
   </div>`;
-    delegate_it_default(document.body, linkSelector, "mouseout", () => {
-      hide();
+    hided = !1;
+    delegate_it_default(document.body, linkSelector, "mouseout", () => hide());
+    delegate_it_default(document.body, linkSelector, "mouseover", async (event) => {
+      currentRj = event.target.dataset[RJ_CODE_ATTRIBUTE], console.debug("[rj-code-preview/rj]", currentRj), currentRj && (hided = !1, await show(event.clientX, event.clientY));
     });
     delegate_it_default(
       document.body,
       linkSelector,
-      "mouseover",
-      async (event) => {
-        let rj = event.target.dataset[RJ_CODE_ATTRIBUTE];
-        console.debug("[rj-code-preview/rj]", rj), rj && await show(rj, event.clientX, event.clientY);
-      }
+      "mousemove",
+      (event) => move(event.clientX, event.clientY)
     );
-    delegate_it_default(document.body, linkSelector, "mousemove", (event) => {
-      move(event.clientX, event.clientY);
-    });
   }
 });
 

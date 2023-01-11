@@ -1,6 +1,6 @@
 {
   "name": "rj-code-preview",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Make RJ code great again!",
   "main": "dist/rj-code-preview.user.js",
   "type": "module",

@@ -1,5 +1,10 @@
 export const productPage = (rj: string) => `https://www.dlsite.com/maniax/work/=/product_id/${rj}.html`
 
+const agings = {
+  adult: '18 禁',
+  general: '全年龄'
+}
+
 function productInfo(rj: string) {
   return new Promise<{
     work_name: string
@@ -22,7 +27,7 @@ function productInfo(rj: string) {
   }>((resolve, reject) => {
     const cache = GM_getValue(`${rj} product`)
     if (cache) {
-      console.debug('[rj-code-preview/product/cache]')
+      console.debug('[rj-code-preview/product/cached]')
       resolve(cache)
     }
     GM_xmlhttpRequest({
@@ -32,7 +37,6 @@ function productInfo(rj: string) {
         if (resp.readyState === 4 && resp.status === 200) {
           GM_setValue(`${rj} product`, resp.response[0])
           console.debug('[rj-code-preview/product]', resp.response[0])
-          resolve(resp.response[0])
         } else reject(resp)
       }
     })
@@ -46,7 +50,7 @@ function productRatingInfo(rj: string) {
   }>((resolve, reject) => {
     const cache = GM_getValue(`${rj} rating`)
     if (cache) {
-      console.debug('[rj-code-preview/rating/cache]')
+      console.debug('[rj-code-preview/rating/cached]')
       resolve(cache)
     }
     GM_xmlhttpRequest({
@@ -56,7 +60,6 @@ function productRatingInfo(rj: string) {
         if (resp.readyState === 4 && resp.status === 200) {
           GM_setValue(`${rj} rating`, resp.response[rj])
           console.debug('[rj-code-preview/rating]', resp.response[rj])
-          resolve(resp.response[rj])
         }
         else reject(resp)
       }
@@ -76,7 +79,7 @@ export default async function(rj: string) {
     group: product.maker_name,
     date: product.regist_date,
     series: product.title_name,
-    age: product.age_category_string,
+    age: agings[product.age_category_string] ?? product.age_category_string,
     voices: product.creaters?.voice_by?.map(it => it.name),
     illusts: product.creaters?.illust_by?.map(it => it.name),
     scenarios: product.creaters?.scenario_by?.map(it => it.name),

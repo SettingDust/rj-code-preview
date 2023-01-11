@@ -3,13 +3,11 @@ import fetchRj from './fetch-rj'
 import mustache from 'mustache'
 import delegate from 'delegate-it'
 
-export let currentWork: Awaited<ReturnType<typeof fetchRj>>
-
 const linkSelector = `a.${RJ_CODE_LINK_CLASS}`
 
 const template = `
-  <img src='{{ image }}'>
-  <div class='info'>
+  <img src="{{ image }}">
+  <div class="info">
     <h3>{{ name }}</h3>
     {{ #rating }}<p><span>评价：</span><span>{{ rating }}</span></p>{{ /rating }}
     {{ #sale }}<p><span>贩卖数：</span><span>{{ sale }}</span></p>{{ /sale }}
@@ -26,20 +24,34 @@ const template = `
     {{ #hasTags }}<p><span>分类：</span>{{ #tags }}<span>{{ . }} </span>{{ /tags }}</p>{{ /hasTags }}
   </div>`
 
-async function show(rj: string, x: number, y: number) {
+export let currentWork: Awaited<ReturnType<typeof fetchRj>>
+let currentRj: string
+
+async function show(x: number, y: number) {
   const popup = document.getElementById('rj-popup')
-  currentWork = await fetchRj(rj)
+  currentWork = await fetchRj(currentRj)
   console.debug('[rj-code-preview/work]', currentWork)
-  const rendered = mustache.render(template, currentWork, null, {
-    escape: (it) => it
-  })
-  console.debug('[rj-code-preview/rendered]', rendered)
-  popup.innerHTML = rendered
-  move(x, y)
-  popup.getElementsByTagName('img').item(0).onload = () => move(x, y)
+  if (!hided) {
+    const rendered = mustache.render(template, currentWork, null, {
+      escape: (it) => it
+    })
+    console.debug('[rj-code-preview/rendered]', rendered)
+    popup.innerHTML = rendered
+    move(x, y)
+    const img = popup
+      .getElementsByTagName('img')
+      .item(0)
+    img.onload = () => move(x, y)
+    img.onerror = () => move(x, y)
+  }
+  hided = false
 }
 
+let hided = false
+
 function hide() {
+  hided = true
+  currentRj = undefined
   currentWork = undefined
   document.getElementById('rj-popup').innerHTML = ''
 }
@@ -63,26 +75,20 @@ function move(x: number, y: number) {
   }
 }
 
-delegate(document.body, linkSelector, 'mouseout', () => {
-  hide()
+delegate(document.body, linkSelector, 'mouseout', () => hide())
+
+delegate(document.body, linkSelector, 'mouseover', async (event) => {
+  const element = <HTMLElement>event.target
+  currentRj = element.dataset[RJ_CODE_ATTRIBUTE]
+  console.debug('[rj-code-preview/rj]', currentRj)
+  if (!currentRj) return
+  hided = false
+  await show(event.clientX, event.clientY)
 })
 
-delegate(
-  document.body,
-  linkSelector,
-  'mouseover',
-  async (event) => {
-    const element = <HTMLElement>event.target
-    const rj = element.dataset[RJ_CODE_ATTRIBUTE]
-    console.debug('[rj-code-preview/rj]', rj)
-    if (!rj) return
-    await show(rj, event.clientX, event.clientY)
-  }
-)
-
-delegate(document.body, linkSelector, 'mousemove', (event) => {
+delegate(document.body, linkSelector, 'mousemove', (event) =>
   move(event.clientX, event.clientY)
-})
+)
 
 export default function initPopup() {
   GM_addElement(document.body, 'div', { id: 'rj-popup' })
