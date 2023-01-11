@@ -10,6 +10,6 @@
 // @inject-into    auto
 // @match          *://*/*
 // @namespace      SettingDust
-// @run-at         document-start
-// @version        3.0.2
+// @run-at         document-end
+// @version        3.0.3
 // ==/UserScript==

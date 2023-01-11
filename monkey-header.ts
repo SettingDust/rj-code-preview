@@ -9,5 +9,6 @@ export default await generate('violentmonkey', {
   grants: ['style', 'fetch', 'set', 'get'],
   inject: 'auto',
   // @ts-ignore
-  custom: ['grant GM_addElement']
+  custom: ['grant GM_addElement'],
+  run: "end"
 })

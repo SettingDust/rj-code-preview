@@ -10,20 +10,15 @@
 // @inject-into    auto
 // @match          *://*/*
 // @namespace      SettingDust
-// @run-at         document-start
-// @version        3.0.2
+// @run-at         document-end
+// @version        3.0.3
 // ==/UserScript==
-var __defProp = Object.defineProperty;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __esm = (fn, res) => function() {
-  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
-};
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: !0 });
-};
 
 // src/fetch-rj.ts
+var productPage = (rj) => `https://www.dlsite.com/maniax/work/=/product_id/${rj}.html`, agings = {
+  adult: "18 \u7981",
+  general: "\u5168\u5E74\u9F84"
+};
 function productInfo(rj) {
   return new Promise((resolve, reject) => {
     let cache = GM_getValue(`${rj} product`);
@@ -75,16 +70,9 @@ async function fetch_rj_default(rj) {
     sale: rating.dl_count
   };
 }
-var productPage, agings, init_fetch_rj = __esm({
-  "src/fetch-rj.ts"() {
-    productPage = (rj) => `https://www.dlsite.com/maniax/work/=/product_id/${rj}.html`, agings = {
-      adult: "18 \u7981",
-      general: "\u5168\u5E74\u9F84"
-    };
-  }
-});
 
 // src/hack-rj-code.ts
+var RJ_CODE_LINK_CLASS = "rj-code", RJ_CODE_ATTRIBUTE = "rjCode", RJ_REGEX = new RegExp("R[JE][0-9]{6,8}", "gi");
 function wrapRJCode(rj) {
   let a = document.createElement("a");
   return a.classList.add(RJ_CODE_LINK_CLASS), a.href = productPage(rj), a.innerHTML = rj, a.target = "_blank", a.rel = "noreferrer", a.dataset[RJ_CODE_ATTRIBUTE] = rj, a;
@@ -125,14 +113,11 @@ function hack_rj_code_default(root) {
     node.parentElement.classList.contains(RJ_CODE_LINK_CLASS) || injectRJCode(node);
   }
 }
-var RJ_CODE_LINK_CLASS, RJ_CODE_ATTRIBUTE, RJ_REGEX, init_hack_rj_code = __esm({
-  "src/hack-rj-code.ts"() {
-    init_fetch_rj();
-    RJ_CODE_LINK_CLASS = "rj-code", RJ_CODE_ATTRIBUTE = "rjCode", RJ_REGEX = new RegExp("R[JE][0-9]{6,8}", "gi");
-  }
-});
 
 // node_modules/.pnpm/mustache@4.2.0/node_modules/mustache/mustache.mjs
+var objectToString = Object.prototype.toString, isArray = Array.isArray || function(object) {
+  return objectToString.call(object) === "[object Array]";
+};
 function isFunction(object) {
   return typeof object == "function";
 }
@@ -148,17 +133,30 @@ function hasProperty(obj, propName) {
 function primitiveHasOwnProperty(primitive, propName) {
   return primitive != null && typeof primitive != "object" && primitive.hasOwnProperty && primitive.hasOwnProperty(propName);
 }
+var regExpTest = RegExp.prototype.test;
 function testRegExp(re, string) {
   return regExpTest.call(re, string);
 }
+var nonSpaceRe = /\S/;
 function isWhitespace(string) {
   return !testRegExp(nonSpaceRe, string);
 }
+var entityMap = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;",
+  "/": "&#x2F;",
+  "`": "&#x60;",
+  "=": "&#x3D;"
+};
 function escapeHtml(string) {
   return String(string).replace(/[&<>"'`=\/]/g, function(s) {
     return entityMap[s];
   });
 }
+var whiteRe = /\s*/, spaceRe = /\s+/, equalsRe = /\s*=/, curlyRe = /\s*\}/, tagRe = /#|\^|\/|>|\{|&|=|!/;
 function parseTemplate(template2, tags) {
   if (!template2)
     return [];
@@ -224,9 +222,57 @@ function nestTokens(tokens) {
 function Scanner(string) {
   this.string = string, this.tail = string, this.pos = 0;
 }
+Scanner.prototype.eos = function() {
+  return this.tail === "";
+};
+Scanner.prototype.scan = function(re) {
+  var match = this.tail.match(re);
+  if (!match || match.index !== 0)
+    return "";
+  var string = match[0];
+  return this.tail = this.tail.substring(string.length), this.pos += string.length, string;
+};
+Scanner.prototype.scanUntil = function(re) {
+  var index = this.tail.search(re), match;
+  switch (index) {
+    case -1:
+      match = this.tail, this.tail = "";
+      break;
+    case 0:
+      match = "";
+      break;
+    default:
+      match = this.tail.substring(0, index), this.tail = this.tail.substring(index);
+  }
+  return this.pos += match.length, match;
+};
 function Context(view, parentContext) {
   this.view = view, this.cache = { ".": this.view }, this.parent = parentContext;
 }
+Context.prototype.push = function(view) {
+  return new Context(view, this);
+};
+Context.prototype.lookup = function(name) {
+  var cache = this.cache, value;
+  if (cache.hasOwnProperty(name))
+    value = cache[name];
+  else {
+    for (var context = this, intermediateValue, names, index, lookupHit = !1; context; ) {
+      if (name.indexOf(".") > 0)
+        for (intermediateValue = context.view, names = name.split("."), index = 0; intermediateValue != null && index < names.length; )
+          index === names.length - 1 && (lookupHit = hasProperty(intermediateValue, names[index]) || primitiveHasOwnProperty(intermediateValue, names[index])), intermediateValue = intermediateValue[names[index++]];
+      else
+        intermediateValue = context.view[name], lookupHit = hasProperty(context.view, name);
+      if (lookupHit) {
+        value = intermediateValue;
+        break;
+      }
+      context = context.parent;
+    }
+    cache[name] = value;
+  }
+  return isFunction(value) && (value = value.call(this.view)), value;
+};
 function Writer() {
   this.templateCache = {
     _cache: {},
@@ -241,197 +287,130 @@ function Writer() {
     }
   };
 }
-var objectToString, isArray, regExpTest, nonSpaceRe, entityMap, whiteRe, spaceRe, equalsRe, curlyRe, tagRe, mustache, defaultWriter, mustache_default, init_mustache = __esm({
-  "node_modules/.pnpm/mustache@4.2.0/node_modules/mustache/mustache.mjs"() {
-    objectToString = Object.prototype.toString, isArray = Array.isArray || function(object) {
-      return objectToString.call(object) === "[object Array]";
-    };
-    regExpTest = RegExp.prototype.test;
-    nonSpaceRe = /\S/;
-    entityMap = {
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;",
-      "/": "&#x2F;",
-      "`": "&#x60;",
-      "=": "&#x3D;"
-    };
-    whiteRe = /\s*/, spaceRe = /\s+/, equalsRe = /\s*=/, curlyRe = /\s*\}/, tagRe = /#|\^|\/|>|\{|&|=|!/;
-    Scanner.prototype.eos = function() {
-      return this.tail === "";
-    };
-    Scanner.prototype.scan = function(re) {
-      var match = this.tail.match(re);
-      if (!match || match.index !== 0)
-        return "";
-      var string = match[0];
-      return this.tail = this.tail.substring(string.length), this.pos += string.length, string;
-    };
-    Scanner.prototype.scanUntil = function(re) {
-      var index = this.tail.search(re), match;
-      switch (index) {
-        case -1:
-          match = this.tail, this.tail = "";
-          break;
-        case 0:
-          match = "";
-          break;
-        default:
-          match = this.tail.substring(0, index), this.tail = this.tail.substring(index);
-      }
-      return this.pos += match.length, match;
-    };
-    Context.prototype.push = function(view) {
-      return new Context(view, this);
-    };
-    Context.prototype.lookup = function(name) {
-      var cache = this.cache, value;
-      if (cache.hasOwnProperty(name))
-        value = cache[name];
-      else {
-        for (var context = this, intermediateValue, names, index, lookupHit = !1; context; ) {
-          if (name.indexOf(".") > 0)
-            for (intermediateValue = context.view, names = name.split("."), index = 0; intermediateValue != null && index < names.length; )
-              index === names.length - 1 && (lookupHit = hasProperty(intermediateValue, names[index]) || primitiveHasOwnProperty(intermediateValue, names[index])), intermediateValue = intermediateValue[names[index++]];
-          else
-            intermediateValue = context.view[name], lookupHit = hasProperty(context.view, name);
-          if (lookupHit) {
-            value = intermediateValue;
-            break;
-          }
-          context = context.parent;
-        }
-        cache[name] = value;
-      }
-      return isFunction(value) && (value = value.call(this.view)), value;
-    };
-    Writer.prototype.clearCache = function() {
-      typeof this.templateCache != "undefined" && this.templateCache.clear();
-    };
-    Writer.prototype.parse = function(template2, tags) {
-      var cache = this.templateCache, cacheKey = template2 + ":" + (tags || mustache.tags).join(":"), isCacheEnabled = typeof cache != "undefined", tokens = isCacheEnabled ? cache.get(cacheKey) : void 0;
-      return tokens == null && (tokens = parseTemplate(template2, tags), isCacheEnabled && cache.set(cacheKey, tokens)), tokens;
-    };
-    Writer.prototype.render = function(template2, view, partials, config) {
-      var tags = this.getConfigTags(config), tokens = this.parse(template2, tags), context = view instanceof Context ? view : new Context(view, void 0);
-      return this.renderTokens(tokens, context, partials, template2, config);
-    };
-    Writer.prototype.renderTokens = function(tokens, context, partials, originalTemplate, config) {
-      for (var buffer = "", token, symbol, value, i = 0, numTokens = tokens.length; i < numTokens; ++i)
-        value = void 0, token = tokens[i], symbol = token[0], symbol === "#" ? value = this.renderSection(token, context, partials, originalTemplate, config) : symbol === "^" ? value = this.renderInverted(token, context, partials, originalTemplate, config) : symbol === ">" ? value = this.renderPartial(token, context, partials, config) : symbol === "&" ? value = this.unescapedValue(token, context) : symbol === "name" ? value = this.escapedValue(token, context, config) : symbol === "text" && (value = this.rawValue(token)), value !== void 0 && (buffer += value);
-      return buffer;
-    };
-    Writer.prototype.renderSection = function(token, context, partials, originalTemplate, config) {
-      var self = this, buffer = "", value = context.lookup(token[1]);
-      function subRender(template2) {
-        return self.render(template2, context, partials, config);
-      }
-      if (value) {
-        if (isArray(value))
-          for (var j = 0, valueLength = value.length; j < valueLength; ++j)
-            buffer += this.renderTokens(token[4], context.push(value[j]), partials, originalTemplate, config);
-        else if (typeof value == "object" || typeof value == "string" || typeof value == "number")
-          buffer += this.renderTokens(token[4], context.push(value), partials, originalTemplate, config);
-        else if (isFunction(value)) {
-          if (typeof originalTemplate != "string")
-            throw new Error("Cannot use higher-order sections without the original template");
-          value = value.call(context.view, originalTemplate.slice(token[3], token[5]), subRender), value != null && (buffer += value);
-        } else
-          buffer += this.renderTokens(token[4], context, partials, originalTemplate, config);
-        return buffer;
-      }
-    };
-    Writer.prototype.renderInverted = function(token, context, partials, originalTemplate, config) {
-      var value = context.lookup(token[1]);
-      if (!value || isArray(value) && value.length === 0)
-        return this.renderTokens(token[4], context, partials, originalTemplate, config);
-    };
-    Writer.prototype.indentPartial = function(partial, indentation, lineHasNonSpace) {
-      for (var filteredIndentation = indentation.replace(/[^ \t]/g, ""), partialByNl = partial.split(`
-`), i = 0; i < partialByNl.length; i++)
-        partialByNl[i].length && (i > 0 || !lineHasNonSpace) && (partialByNl[i] = filteredIndentation + partialByNl[i]);
-      return partialByNl.join(`
-`);
-    };
-    Writer.prototype.renderPartial = function(token, context, partials, config) {
-      if (partials) {
-        var tags = this.getConfigTags(config), value = isFunction(partials) ? partials(token[1]) : partials[token[1]];
-        if (value != null) {
-          var lineHasNonSpace = token[6], tagIndex = token[5], indentation = token[4], indentedValue = value;
-          tagIndex == 0 && indentation && (indentedValue = this.indentPartial(value, indentation, lineHasNonSpace));
-          var tokens = this.parse(indentedValue, tags);
-          return this.renderTokens(tokens, context, partials, indentedValue, config);
-        }
-      }
-    };
-    Writer.prototype.unescapedValue = function(token, context) {
-      var value = context.lookup(token[1]);
-      if (value != null)
-        return value;
-    };
-    Writer.prototype.escapedValue = function(token, context, config) {
-      var escape = this.getConfigEscape(config) || mustache.escape, value = context.lookup(token[1]);
-      if (value != null)
-        return typeof value == "number" && escape === mustache.escape ? String(value) : escape(value);
-    };
-    Writer.prototype.rawValue = function(token) {
-      return token[1];
-    };
-    Writer.prototype.getConfigTags = function(config) {
-      return isArray(config) ? config : config && typeof config == "object" ? config.tags : void 0;
-    };
-    Writer.prototype.getConfigEscape = function(config) {
-      if (config && typeof config == "object" && !isArray(config))
-        return config.escape;
-    };
-    mustache = {
-      name: "mustache.js",
-      version: "4.2.0",
-      tags: ["{{", "}}"],
-      clearCache: void 0,
-      escape: void 0,
-      parse: void 0,
-      render: void 0,
-      Scanner: void 0,
-      Context: void 0,
-      Writer: void 0,
-      /**
-       * Allows a user to override the default caching strategy, by providing an
-       * object with set, get and clear methods. This can also be used to disable
-       * the cache by setting it to the literal `undefined`.
-       */
-      set templateCache(cache) {
-        defaultWriter.templateCache = cache;
-      },
-      /**
-       * Gets the default or overridden caching object from the default writer.
-       */
-      get templateCache() {
-        return defaultWriter.templateCache;
-      }
-    }, defaultWriter = new Writer();
-    mustache.clearCache = function() {
-      return defaultWriter.clearCache();
-    };
-    mustache.parse = function(template2, tags) {
-      return defaultWriter.parse(template2, tags);
-    };
-    mustache.render = function(template2, view, partials, config) {
-      if (typeof template2 != "string")
-        throw new TypeError('Invalid template! Template should be a "string" but "' + typeStr(template2) + '" was given as the first argument for mustache#render(template, view, partials)');
-      return defaultWriter.render(template2, view, partials, config);
-    };
-    mustache.escape = escapeHtml;
-    mustache.Scanner = Scanner;
-    mustache.Context = Context;
-    mustache.Writer = Writer;
-    mustache_default = mustache;
+Writer.prototype.clearCache = function() {
+  typeof this.templateCache != "undefined" && this.templateCache.clear();
+};
+Writer.prototype.parse = function(template2, tags) {
+  var cache = this.templateCache, cacheKey = template2 + ":" + (tags || mustache.tags).join(":"), isCacheEnabled = typeof cache != "undefined", tokens = isCacheEnabled ? cache.get(cacheKey) : void 0;
+  return tokens == null && (tokens = parseTemplate(template2, tags), isCacheEnabled && cache.set(cacheKey, tokens)), tokens;
+};
+Writer.prototype.render = function(template2, view, partials, config) {
+  var tags = this.getConfigTags(config), tokens = this.parse(template2, tags), context = view instanceof Context ? view : new Context(view, void 0);
+  return this.renderTokens(tokens, context, partials, template2, config);
+};
+Writer.prototype.renderTokens = function(tokens, context, partials, originalTemplate, config) {
+  for (var buffer = "", token, symbol, value, i = 0, numTokens = tokens.length; i < numTokens; ++i)
+    value = void 0, token = tokens[i], symbol = token[0], symbol === "#" ? value = this.renderSection(token, context, partials, originalTemplate, config) : symbol === "^" ? value = this.renderInverted(token, context, partials, originalTemplate, config) : symbol === ">" ? value = this.renderPartial(token, context, partials, config) : symbol === "&" ? value = this.unescapedValue(token, context) : symbol === "name" ? value = this.escapedValue(token, context, config) : symbol === "text" && (value = this.rawValue(token)), value !== void 0 && (buffer += value);
+  return buffer;
+};
+Writer.prototype.renderSection = function(token, context, partials, originalTemplate, config) {
+  var self = this, buffer = "", value = context.lookup(token[1]);
+  function subRender(template2) {
+    return self.render(template2, context, partials, config);
   }
-});
+  if (value) {
+    if (isArray(value))
+      for (var j = 0, valueLength = value.length; j < valueLength; ++j)
+        buffer += this.renderTokens(token[4], context.push(value[j]), partials, originalTemplate, config);
+    else if (typeof value == "object" || typeof value == "string" || typeof value == "number")
+      buffer += this.renderTokens(token[4], context.push(value), partials, originalTemplate, config);
+    else if (isFunction(value)) {
+      if (typeof originalTemplate != "string")
+        throw new Error("Cannot use higher-order sections without the original template");
+      value = value.call(context.view, originalTemplate.slice(token[3], token[5]), subRender), value != null && (buffer += value);
+    } else
+      buffer += this.renderTokens(token[4], context, partials, originalTemplate, config);
+    return buffer;
+  }
+};
+Writer.prototype.renderInverted = function(token, context, partials, originalTemplate, config) {
+  var value = context.lookup(token[1]);
+  if (!value || isArray(value) && value.length === 0)
+    return this.renderTokens(token[4], context, partials, originalTemplate, config);
+};
+Writer.prototype.indentPartial = function(partial, indentation, lineHasNonSpace) {
+  for (var filteredIndentation = indentation.replace(/[^ \t]/g, ""), partialByNl = partial.split(`
+`), i = 0; i < partialByNl.length; i++)
+    partialByNl[i].length && (i > 0 || !lineHasNonSpace) && (partialByNl[i] = filteredIndentation + partialByNl[i]);
+  return partialByNl.join(`
+`);
+};
+Writer.prototype.renderPartial = function(token, context, partials, config) {
+  if (partials) {
+    var tags = this.getConfigTags(config), value = isFunction(partials) ? partials(token[1]) : partials[token[1]];
+    if (value != null) {
+      var lineHasNonSpace = token[6], tagIndex = token[5], indentation = token[4], indentedValue = value;
+      tagIndex == 0 && indentation && (indentedValue = this.indentPartial(value, indentation, lineHasNonSpace));
+      var tokens = this.parse(indentedValue, tags);
+      return this.renderTokens(tokens, context, partials, indentedValue, config);
+    }
+  }
+};
+Writer.prototype.unescapedValue = function(token, context) {
+  var value = context.lookup(token[1]);
+  if (value != null)
+    return value;
+};
+Writer.prototype.escapedValue = function(token, context, config) {
+  var escape = this.getConfigEscape(config) || mustache.escape, value = context.lookup(token[1]);
+  if (value != null)
+    return typeof value == "number" && escape === mustache.escape ? String(value) : escape(value);
+};
+Writer.prototype.rawValue = function(token) {
+  return token[1];
+};
+Writer.prototype.getConfigTags = function(config) {
+  return isArray(config) ? config : config && typeof config == "object" ? config.tags : void 0;
+};
+Writer.prototype.getConfigEscape = function(config) {
+  if (config && typeof config == "object" && !isArray(config))
+    return config.escape;
+};
+var mustache = {
+  name: "mustache.js",
+  version: "4.2.0",
+  tags: ["{{", "}}"],
+  clearCache: void 0,
+  escape: void 0,
+  parse: void 0,
+  render: void 0,
+  Scanner: void 0,
+  Context: void 0,
+  Writer: void 0,
+  /**
+   * Allows a user to override the default caching strategy, by providing an
+   * object with set, get and clear methods. This can also be used to disable
+   * the cache by setting it to the literal `undefined`.
+   */
+  set templateCache(cache) {
+    defaultWriter.templateCache = cache;
+  },
+  /**
+   * Gets the default or overridden caching object from the default writer.
+   */
+  get templateCache() {
+    return defaultWriter.templateCache;
+  }
+}, defaultWriter = new Writer();
+mustache.clearCache = function() {
+  return defaultWriter.clearCache();
+};
+mustache.parse = function(template2, tags) {
+  return defaultWriter.parse(template2, tags);
+};
+mustache.render = function(template2, view, partials, config) {
+  if (typeof template2 != "string")
+    throw new TypeError('Invalid template! Template should be a "string" but "' + typeStr(template2) + '" was given as the first argument for mustache#render(template, view, partials)');
+  return defaultWriter.render(template2, view, partials, config);
+};
+mustache.escape = escapeHtml;
+mustache.Scanner = Scanner;
+mustache.Context = Context;
+mustache.Writer = Writer;
+var mustache_default = mustache;
 
 // node_modules/.pnpm/delegate-it@5.0.0/node_modules/delegate-it/index.js
+var ledger = /* @__PURE__ */ new WeakMap();
 function editLedger(wanted, baseElement, callback, setup) {
   var _a, _b;
   if (!wanted && !ledger.has(baseElement))
@@ -477,19 +456,27 @@ function delegate(base, selector, type, callback, options) {
     editLedger(!1, baseElement, callback, setup);
   });
 }
-var ledger, delegate_it_default, init_delegate_it = __esm({
-  "node_modules/.pnpm/delegate-it@5.0.0/node_modules/delegate-it/index.js"() {
-    ledger = /* @__PURE__ */ new WeakMap();
-    delegate_it_default = delegate;
-  }
-});
+var delegate_it_default = delegate;
 
 // src/popup.ts
-var popup_exports = {};
-__export(popup_exports, {
-  currentWork: () => currentWork,
-  default: () => initPopup
-});
+var linkSelector = `a.${RJ_CODE_LINK_CLASS}`, template = `
+  <img src="{{ image }}">
+  <div class="info">
+    <h3>{{ name }}</h3>
+    {{ #rating }}<p><span>\u8BC4\u4EF7\uFF1A</span><span>{{ rating }}</span></p>{{ /rating }}
+    {{ #sale }}<p><span>\u8D29\u5356\u6570\uFF1A</span><span>{{ sale }}</span></p>{{ /sale }}
+    {{ #group }}<p><span>\u793E\u56E2\u540D\uFF1A</span><span>{{ group }}</span></p>{{ /group }}
+    {{ #date }}<p><span>\u8D29\u5356\u65E5\uFF1A</span><span>{{ date }}</span></p>{{ /date }}
+    {{ #series }}<p><span>\u7CFB\u5217\u540D\uFF1A</span><span>{{ series }}</span></p>{{ /series }}
+    {{ #hasCreators }}<p><span>\u4F5C\u8005\uFF1A</span>{{ #creators }}<span>{{ . }} / </span>{{ /creators }}</p>{{ /hasCreators }}
+    {{ #hasScenarios }}<p><span>\u5267\u60C5\uFF1A</span>{{ #scenarios }}<span>{{ . }} / </span>{{ /scenarios }}</p>{{ /hasScenarios }}
+    {{ #hasIllusts }}<p><span>\u63D2\u753B\uFF1A</span>{{ #illusts }}<span>{{ . }} / </span>{{ /illusts }}</p>{{ /hasIllusts }}
+    {{ #hasVoices }}<p><span>\u58F0\u4F18\uFF1A</span>{{ #voices }}<span>{{ . }} / </span>{{ /voices }}</p>{{ /hasVoices }}
+    {{ #hasMusics }}<p><span>\u97F3\u4E50\uFF1A</span>{{ #musics }}<span>{{ . }} / </span>{{ /musics }}</p>{{ /hasMusics }}
+    {{ #age }}<p><span>\u5E74\u9F84\u6307\u5B9A\uFF1A</span><span>{{ age }}</span></p>{{ /age }}
+    {{ #type }}<p><span>\u4F5C\u54C1\u7C7B\u578B\uFF1A</span><span>{{ type }}</span></p>{{ /type }}
+    {{ #hasTags }}<p><span>\u5206\u7C7B\uFF1A</span>{{ #tags }}<span>{{ . }} </span>{{ /tags }}</p>{{ /hasTags }}
+  </div>`, currentWork, currentRj;
 async function show(x, y) {
   let popup = document.getElementById("rj-popup");
   if (currentWork = await fetch_rj_default(currentRj), console.debug("[rj-code-preview/work]", currentWork), !hided) {
@@ -502,6 +489,7 @@ async function show(x, y) {
   }
   hided = !1;
 }
+var hided = !1;
 function hide() {
   hided = !0, currentRj = void 0, currentWork = void 0, document.getElementById("rj-popup").innerHTML = "";
 }
@@ -509,8 +497,20 @@ function move(x, y) {
   let popup = document.getElementById("rj-popup");
   popup.offsetWidth + x + 24 < window.innerWidth ? popup.style.left = x + 8 + "px" : popup.style.left = x - popup.offsetWidth - 8 + "px", popup.offsetHeight + y + 16 > window.innerHeight ? popup.style.top = window.innerHeight - popup.offsetHeight - 16 + "px" : popup.style.top = y + "px";
 }
+delegate_it_default(document.body, linkSelector, "mouseout", () => hide());
+delegate_it_default(document.body, linkSelector, "mouseover", async (event) => {
+  currentRj = event.target.dataset[RJ_CODE_ATTRIBUTE], console.debug("[rj-code-preview/rj]", currentRj), currentRj && (hided = !1, await show(event.clientX, event.clientY));
+});
+delegate_it_default(
+  document.body,
+  linkSelector,
+  "mousemove",
+  (event) => move(event.clientX, event.clientY)
+);
 function initPopup() {
-  GM_addElement(document.body, "div", { id: "rj-popup" }), GM_addStyle(`
+  GM_addElement(document.body, "div", { id: "rj-popup" });
+  let style2 = document.createElement("style");
+  style2.innerHTML = `
   #rj-popup {  
     max-width: 360px;
     position: fixed;
@@ -545,60 +545,25 @@ function initPopup() {
     font-size: 1.1rem;
     font-weight: bold;
     line-height: 1;
-  }`);
+  }`, document.head.append(style2);
 }
-var linkSelector, template, currentWork, currentRj, hided, init_popup = __esm({
-  "src/popup.ts"() {
-    init_hack_rj_code();
-    init_fetch_rj();
-    init_mustache();
-    init_delegate_it();
-    linkSelector = `a.${RJ_CODE_LINK_CLASS}`, template = `
-  <img src="{{ image }}">
-  <div class="info">
-    <h3>{{ name }}</h3>
-    {{ #rating }}<p><span>\u8BC4\u4EF7\uFF1A</span><span>{{ rating }}</span></p>{{ /rating }}
-    {{ #sale }}<p><span>\u8D29\u5356\u6570\uFF1A</span><span>{{ sale }}</span></p>{{ /sale }}
-    {{ #group }}<p><span>\u793E\u56E2\u540D\uFF1A</span><span>{{ group }}</span></p>{{ /group }}
-    {{ #date }}<p><span>\u8D29\u5356\u65E5\uFF1A</span><span>{{ date }}</span></p>{{ /date }}
-    {{ #series }}<p><span>\u7CFB\u5217\u540D\uFF1A</span><span>{{ series }}</span></p>{{ /series }}
-    {{ #hasCreators }}<p><span>\u4F5C\u8005\uFF1A</span>{{ #creators }}<span>{{ . }} / </span>{{ /creators }}</p>{{ /hasCreators }}
-    {{ #hasScenarios }}<p><span>\u5267\u60C5\uFF1A</span>{{ #scenarios }}<span>{{ . }} / </span>{{ /scenarios }}</p>{{ /hasScenarios }}
-    {{ #hasIllusts }}<p><span>\u63D2\u753B\uFF1A</span>{{ #illusts }}<span>{{ . }} / </span>{{ /illusts }}</p>{{ /hasIllusts }}
-    {{ #hasVoices }}<p><span>\u58F0\u4F18\uFF1A</span>{{ #voices }}<span>{{ . }} / </span>{{ /voices }}</p>{{ /hasVoices }}
-    {{ #hasMusics }}<p><span>\u97F3\u4E50\uFF1A</span>{{ #musics }}<span>{{ . }} / </span>{{ /musics }}</p>{{ /hasMusics }}
-    {{ #age }}<p><span>\u5E74\u9F84\u6307\u5B9A\uFF1A</span><span>{{ age }}</span></p>{{ /age }}
-    {{ #type }}<p><span>\u4F5C\u54C1\u7C7B\u578B\uFF1A</span><span>{{ type }}</span></p>{{ /type }}
-    {{ #hasTags }}<p><span>\u5206\u7C7B\uFF1A</span>{{ #tags }}<span>{{ . }} </span>{{ /tags }}</p>{{ /hasTags }}
-  </div>`;
-    hided = !1;
-    delegate_it_default(document.body, linkSelector, "mouseout", () => hide());
-    delegate_it_default(document.body, linkSelector, "mouseover", async (event) => {
-      currentRj = event.target.dataset[RJ_CODE_ATTRIBUTE], console.debug("[rj-code-preview/rj]", currentRj), currentRj && (hided = !1, await show(event.clientX, event.clientY));
-    });
-    delegate_it_default(
-      document.body,
-      linkSelector,
-      "mousemove",
-      (event) => move(event.clientX, event.clientY)
-    );
-  }
-});
 
 // src/index.ts
-init_hack_rj_code();
 var observer = new MutationObserver((records) => {
   for (let { addedNodes } of records)
     for (let node of addedNodes)
       hack_rj_code_default(node);
 });
-document.addEventListener("DOMContentLoaded", async () => {
-  observer.observe(document.body, { childList: !0, subtree: !0 }), hack_rj_code_default(document.body), GM_addStyle(`
-  .${RJ_CODE_LINK_CLASS} {
-    color: inherit;
-    -webkit-text-stroke-width: 1px;
-  }`), await Promise.resolve().then(() => (init_popup(), popup_exports)).then((it) => it.default());
-});
+observer.observe(document.body, { childList: !0, subtree: !0 });
+hack_rj_code_default(document.body);
+var style = document.createElement("style");
+style.innerHTML = `
+.${RJ_CODE_LINK_CLASS} {
+  color: inherit;
+  -webkit-text-stroke-width: 1px;
+}`;
+document.head.append(style);
+initPopup();
 document.addEventListener("securitypolicyviolation", (e) => {
   e.blockedURI.includes("img.dlsite.jp") && document.querySelector(`img[src="${e.blockedURI}"]`).remove();
 });

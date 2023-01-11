@@ -38,9 +38,7 @@ async function show(x: number, y: number) {
     console.debug('[rj-code-preview/rendered]', rendered)
     popup.innerHTML = rendered
     move(x, y)
-    const img = popup
-      .getElementsByTagName('img')
-      .item(0)
+    const img = popup.getElementsByTagName('img').item(0)
     img.onload = () => move(x, y)
     img.onerror = () => move(x, y)
   }
@@ -92,7 +90,8 @@ delegate(document.body, linkSelector, 'mousemove', (event) =>
 
 export default function initPopup() {
   GM_addElement(document.body, 'div', { id: 'rj-popup' })
-  GM_addStyle(`
+  const style = document.createElement('style')
+  style.innerHTML = `
   #rj-popup {  
     max-width: 360px;
     position: fixed;
@@ -127,5 +126,6 @@ export default function initPopup() {
     font-size: 1.1rem;
     font-weight: bold;
     line-height: 1;
-  }`)
+  }`
+  document.head.append(style)
 }

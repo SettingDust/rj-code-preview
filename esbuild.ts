@@ -20,6 +20,7 @@ const options = <BuildOptions>{
   }
 }
 
+await build(options)
 if (process.argv[2] === '--watch' || process.argv[2] === '-w')
   await serve(
     {
@@ -28,4 +29,3 @@ if (process.argv[2] === '--watch' || process.argv[2] === '-w')
     },
     options
   )
-else await build(options)
