@@ -5,10 +5,9 @@ export default await generate('violentmonkey', {
   packagePath: './package.json',
   output: 'dist/header.txt',
   namespace: 'SettingDust',
-  matches: ['*://*/*'],
+  matches: ['*://*/*', '*://dlsite.com/*'],
   grants: ['fetch', 'set', 'get'],
   inject: 'auto',
-  // @ts-ignore
-  custom: ['grant GM_addElement'],
+  custom: ['grant GM_addElement', 'name:zh-CN DLSite_RJ_码预览'],
   run: "end"
 })

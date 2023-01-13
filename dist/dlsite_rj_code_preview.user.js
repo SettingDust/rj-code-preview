@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name           rj-code-preview
+// @name           dlsite_rj_code_preview
 // @author         SettingDust
 // @description    Make RJ code great again!
 // @grant          GM_addElement
@@ -8,6 +8,8 @@
 // @grant          GM_getValue
 // @inject-into    auto
 // @match          *://*/*
+// @match          *://dlsite.com/*
+// @name:zh-CN     DLSite_RJ_码预览
 // @namespace      SettingDust
 // @run-at         document-end
 // @version        3.0.4
