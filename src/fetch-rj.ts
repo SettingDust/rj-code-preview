@@ -1,5 +1,5 @@
 export const productPage = (rj: string) =>
-  `https://www.dlsite.com/maniax/work/=/product_id/${rj}.html`
+  `https://www.dlsite.com/maniax/work/=/product_id/${rj.toUpperCase()}.html`
 
 const agings = {
   adult: '18 禁',

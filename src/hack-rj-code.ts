@@ -11,7 +11,7 @@ function wrapRJCode(rj: string) {
   a.innerHTML = rj
   a.target = '_blank'
   a.rel = 'noreferrer'
-  a.dataset[RJ_CODE_ATTRIBUTE] = rj
+  a.dataset[RJ_CODE_ATTRIBUTE] = rj.toUpperCase()
   return a
 }
 

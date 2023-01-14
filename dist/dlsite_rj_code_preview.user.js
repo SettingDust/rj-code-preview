@@ -16,7 +16,7 @@
 // ==/UserScript==
 
 // src/fetch-rj.ts
-var productPage = (rj) => `https://www.dlsite.com/maniax/work/=/product_id/${rj}.html`, agings = {
+var productPage = (rj) => `https://www.dlsite.com/maniax/work/=/product_id/${rj.toUpperCase()}.html`, agings = {
   adult: "18 \u7981",
   general: "\u5168\u5E74\u9F84"
 };
@@ -83,7 +83,7 @@ function fetch_rj_default(rj) {
 var RJ_CODE_LINK_CLASS = "rj-code", RJ_CODE_ATTRIBUTE = "rjCode", RJ_REGEX = new RegExp("R[JE][0-9]{6,8}", "gi");
 function wrapRJCode(rj) {
   let a = document.createElement("a");
-  return a.classList.add(RJ_CODE_LINK_CLASS), a.href = productPage(rj), a.innerHTML = rj, a.target = "_blank", a.rel = "noreferrer", a.dataset[RJ_CODE_ATTRIBUTE] = rj, a;
+  return a.classList.add(RJ_CODE_LINK_CLASS), a.href = productPage(rj), a.innerHTML = rj, a.target = "_blank", a.rel = "noreferrer", a.dataset[RJ_CODE_ATTRIBUTE] = rj.toUpperCase(), a;
 }
 function injectRJCode(node) {
   var _a, _b;
