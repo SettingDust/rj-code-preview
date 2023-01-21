@@ -27,18 +27,19 @@ function injectRJCode(node: Node) {
     })
   }
 
+  if (matches.length) console.debug('[rj-code-preview/matches]', text, matches)
+
   node.nodeValue = text.substring(0, matches[0].index)
   let prev = <Node | null>null
   for (let i = 0; i < matches.length; i++) {
     const match = matches[i]
     const a = wrapRJCode(match.value)
-    node.parentNode.insertBefore(
-      a,
-      prev?.nextSibling ?? node.nextSibling
-    )
-
+    node.parentNode.insertBefore(a, prev ? prev.nextSibling : node.nextSibling)
     const nextIndex = matches[i + 1]?.index
-    const afterText = text.substring(match.index + match.value.length, nextIndex)
+    const afterText = text.substring(
+      match.index + match.value.length,
+      nextIndex
+    )
     if (afterText) {
       const afterNode = document.createTextNode(afterText)
       node.parentNode.insertBefore(afterNode, a.nextElementSibling)
@@ -50,8 +51,10 @@ function injectRJCode(node: Node) {
 export default function (root: Node) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
     acceptNode(node: Node): number {
-      if (node.parentElement.classList.contains(RJ_CODE_LINK_CLASS)
-        || node.nodeValue.match(RJ_REGEX))
+      if (
+        node.parentElement.classList.contains(RJ_CODE_LINK_CLASS) ||
+        node.nodeValue.match(RJ_REGEX)
+      )
         return NodeFilter.FILTER_ACCEPT
     }
   })

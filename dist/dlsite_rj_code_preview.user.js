@@ -93,15 +93,15 @@ function injectRJCode(node) {
       index: match.index,
       value: match[0]
     });
-  node.nodeValue = text.substring(0, matches[0].index);
+  matches.length && console.debug("[rj-code-preview/matches]", text, matches), node.nodeValue = text.substring(0, matches[0].index);
   let prev = null;
   for (let i = 0; i < matches.length; i++) {
     let match2 = matches[i], a = wrapRJCode(match2.value);
-    node.parentNode.insertBefore(
-      a,
-      (_a = prev == null ? void 0 : prev.nextSibling) != null ? _a : node.nextSibling
+    node.parentNode.insertBefore(a, (_a = prev == null ? void 0 : prev.nextSibling) != null ? _a : node.nextSibling);
+    let nextIndex = (_b = matches[i + 1]) == null ? void 0 : _b.index, afterText = text.substring(
+      match2.index + match2.value.length,
+      nextIndex
     );
-    let nextIndex = (_b = matches[i + 1]) == null ? void 0 : _b.index, afterText = text.substring(match2.index + match2.value.length, nextIndex);
     if (afterText) {
       let afterNode = document.createTextNode(afterText);
       node.parentNode.insertBefore(afterNode, a.nextElementSibling), prev = afterNode;
