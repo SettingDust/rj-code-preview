@@ -12,7 +12,7 @@
 // @name:zh-CN     DLSite_RJ_码预览
 // @namespace      SettingDust
 // @run-at         document-end
-// @version        3.0.4
+// @version        3.0.5
 // ==/UserScript==
 
 // src/fetch-rj.ts
@@ -67,8 +67,8 @@ function fetch_rj_default(rj) {
           hasMusics: (_v = (_u = product.creaters) == null ? void 0 : _u.music_by) == null ? void 0 : _v.length,
           tags: (_w = product.genres) == null ? void 0 : _w.map((it) => it.name),
           hasTags: (_x = product.genres) == null ? void 0 : _x.length,
-          rating: rating.rate_average_2dp,
-          sale: rating.dl_count
+          rating: rating == null ? void 0 : rating.rate_average_2dp,
+          sale: rating == null ? void 0 : rating.dl_count
         };
       }
     ).then((it) => {
@@ -86,7 +86,7 @@ function wrapRJCode(rj) {
   return a.classList.add(RJ_CODE_LINK_CLASS), a.href = productPage(rj), a.innerHTML = rj, a.target = "_blank", a.rel = "noreferrer", a.dataset[RJ_CODE_ATTRIBUTE] = rj.toUpperCase(), a;
 }
 function injectRJCode(node) {
-  var _a, _b;
+  var _a;
   let text = node.nodeValue, matches = [], match;
   for (; match = RJ_REGEX.exec(text); )
     matches.push({
@@ -97,8 +97,8 @@ function injectRJCode(node) {
   let prev = null;
   for (let i = 0; i < matches.length; i++) {
     let match2 = matches[i], a = wrapRJCode(match2.value);
-    node.parentNode.insertBefore(a, (_a = prev == null ? void 0 : prev.nextSibling) != null ? _a : node.nextSibling);
-    let nextIndex = (_b = matches[i + 1]) == null ? void 0 : _b.index, afterText = text.substring(
+    node.parentNode.insertBefore(a, prev ? prev.nextSibling : node.nextSibling);
+    let nextIndex = (_a = matches[i + 1]) == null ? void 0 : _a.index, afterText = text.substring(
       match2.index + match2.value.length,
       nextIndex
     );

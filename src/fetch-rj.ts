@@ -85,8 +85,8 @@ export default function (rj: string) {
         hasMusics: product.creaters?.music_by?.length,
         tags: product.genres?.map((it) => it.name),
         hasTags: product.genres?.length,
-        rating: rating.rate_average_2dp,
-        sale: rating.dl_count
+        rating: rating?.rate_average_2dp,
+        sale: rating?.dl_count
       })
     ).then(it => {
       GM_setValue(rj, it)
