@@ -11,7 +11,7 @@
 // @name:zh-CN     DLSite_RJ_码预览
 // @namespace      SettingDust
 // @run-at         document-end
-// @version        3.0.7
+// @version        3.0.8
 // ==/UserScript==
 
 // src/fetch-rj.ts
@@ -510,8 +510,8 @@ delegate_it_default(
   "mouseout",
   () => hide()
 );
-delegate_it_default(document.body, linkSelector, "mouseover", async (event) => {
-  currentRj = event.target.dataset[RJ_CODE_ATTRIBUTE], console.debug("[rj-code-preview/rj]", currentRj), currentRj && (hided = !1, await show(event.clientX, event.clientY));
+delegate_it_default(document.body, linkSelector, "mouseover", (event) => {
+  currentRj = event.target.dataset[RJ_CODE_ATTRIBUTE], console.debug("[rj-code-preview/rj]", currentRj), currentRj && (hided = !1, show(event.clientX, event.clientY).then());
 });
 delegate_it_default(
   document.body,

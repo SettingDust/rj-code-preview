@@ -77,13 +77,13 @@ delegate(document.body, linkSelector, 'mouseout', () =>
   hide()
 )
 
-delegate(document.body, linkSelector, 'mouseover', async (event) => {
+delegate(document.body, linkSelector, 'mouseover', (event) => {
   const element = <HTMLElement>event.target
   currentRj = element.dataset[RJ_CODE_ATTRIBUTE]
   console.debug('[rj-code-preview/rj]', currentRj)
   if (!currentRj) return
   hided = false
-  await show(event.clientX, event.clientY)
+  show(event.clientX, event.clientY).then()
 })
 
 delegate(document.body, linkSelector, 'mousemove', (event) =>

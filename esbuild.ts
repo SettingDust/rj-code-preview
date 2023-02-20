@@ -21,7 +21,8 @@ const options = <BuildOptions>{
 }
 
 await build(options)
-if (process.argv[2] === '--watch' || process.argv[2] === '-w')
+if (process.argv[2] === '--watch' || process.argv[2] === '-w') {
+  console.debug(`http://localhost:7000/${packageJson.name}.user.js`)
   await serve(
     {
       port: 7000,
@@ -29,3 +30,4 @@ if (process.argv[2] === '--watch' || process.argv[2] === '-w')
     },
     options
   )
+}
