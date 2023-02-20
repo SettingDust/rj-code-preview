@@ -8,6 +8,6 @@ export default await generate('violentmonkey', {
   matches: ['*://*/*', '*://dlsite.com/*'],
   grants: ['fetch', 'set', 'get'],
   inject: 'auto',
-  custom: ['grant GM_addElement', 'name:zh-CN DLSite_RJ_码预览'],
+  custom: ['name:zh-CN DLSite_RJ_码预览'],
   run: "end"
 })

@@ -91,7 +91,9 @@ delegate(document.body, linkSelector, 'mousemove', (event) =>
 )
 
 export default function initPopup() {
-  GM_addElement(document.body, 'div', { id: 'rj-popup' })
+  const popup = document.createElement('div')
+  popup.id = 'rj-popup'
+  document.body.append(popup)
   const style = document.createElement('style')
   style.innerHTML = `
   #rj-popup {  

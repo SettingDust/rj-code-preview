@@ -2,7 +2,6 @@
 // @name           dlsite_rj_code_preview
 // @author         SettingDust
 // @description    Make RJ code great again!
-// @grant          GM_addElement
 // @grant          GM_xmlhttpRequest
 // @grant          GM_setValue
 // @grant          GM_getValue
@@ -12,7 +11,7 @@
 // @name:zh-CN     DLSite_RJ_码预览
 // @namespace      SettingDust
 // @run-at         document-end
-// @version        3.0.6
+// @version        3.0.7
 // ==/UserScript==
 
 // src/fetch-rj.ts
@@ -521,7 +520,8 @@ delegate_it_default(
   (event) => move(event.clientX, event.clientY)
 );
 function initPopup() {
-  GM_addElement(document.body, "div", { id: "rj-popup" });
+  let popup = document.createElement("div");
+  popup.id = "rj-popup", document.body.append(popup);
   let style2 = document.createElement("style");
   style2.innerHTML = `
   #rj-popup {  

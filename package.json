@@ -1,6 +1,6 @@
 {
   "name": "dlsite_rj_code_preview",
-  "version": "3.0.6",
+  "version": "3.0.7",
   "description": "Make RJ code great again!",
   "main": "dist/rj-code-preview.user.js",
   "type": "module",
