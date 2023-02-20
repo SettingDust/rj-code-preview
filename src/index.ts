@@ -13,6 +13,10 @@ style.innerHTML = `
 .${RJ_CODE_LINK_CLASS} {
   color: inherit;
   -webkit-text-stroke-width: 1px;
+  width: fit-content !important;
+  display: inline-flex !important;
+  line-height: 1;
+  font-size: inherit !important;
 }`
 document.head.append(style)
 

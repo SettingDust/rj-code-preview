@@ -73,7 +73,9 @@ function move(x: number, y: number) {
   }
 }
 
-delegate(document.body, linkSelector, 'mouseout', () => hide())
+delegate(document.body, linkSelector, 'mouseout', () =>
+  hide()
+)
 
 delegate(document.body, linkSelector, 'mouseover', async (event) => {
   const element = <HTMLElement>event.target
@@ -123,6 +125,7 @@ export default function initPopup() {
   }
   
   #rj-popup > .info > h3 {
+    color: inherit;
     font-size: 1.1rem;
     font-weight: bold;
     line-height: 1;

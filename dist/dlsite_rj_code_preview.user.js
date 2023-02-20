@@ -12,7 +12,7 @@
 // @name:zh-CN     DLSite_RJ_码预览
 // @namespace      SettingDust
 // @run-at         document-end
-// @version        3.0.5
+// @version        3.0.6
 // ==/UserScript==
 
 // src/fetch-rj.ts
@@ -569,6 +569,9 @@ style.innerHTML = `
 .${RJ_CODE_LINK_CLASS} {
   color: inherit;
   -webkit-text-stroke-width: 1px;
+  width: fit-content !important;
+  display: inline-flex !important;
+  line-height: 1;
 }`;
 document.head.append(style);
 initPopup();
