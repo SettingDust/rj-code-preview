@@ -505,7 +505,12 @@ function move(x, y) {
   let popup = document.getElementById("rj-popup");
   popup.offsetWidth + x + 24 < window.innerWidth ? popup.style.left = x + 8 + "px" : popup.style.left = x - popup.offsetWidth - 8 + "px", popup.offsetHeight + y + 16 > window.innerHeight ? popup.style.top = window.innerHeight - popup.offsetHeight - 16 + "px" : popup.style.top = y + "px";
 }
-delegate_it_default(document.body, linkSelector, "mouseout", () => hide());
+delegate_it_default(
+  document.body,
+  linkSelector,
+  "mouseout",
+  () => hide()
+);
 delegate_it_default(document.body, linkSelector, "mouseover", async (event) => {
   currentRj = event.target.dataset[RJ_CODE_ATTRIBUTE], console.debug("[rj-code-preview/rj]", currentRj), currentRj && (hided = !1, await show(event.clientX, event.clientY));
 });
@@ -550,6 +555,7 @@ function initPopup() {
   }
   
   #rj-popup > .info > h3 {
+    color: inherit;
     font-size: 1.1rem;
     font-weight: bold;
     line-height: 1;
@@ -569,9 +575,19 @@ style.innerHTML = `
 .${RJ_CODE_LINK_CLASS} {
   color: inherit;
   -webkit-text-stroke-width: 1px;
+  
+  /* \u5E7B\u60F3\u6B21\u5143\u9996\u9875\u5217\u8868\u4F1A\u8BA9\u5BBD\u5EA6\u53D8\u6210 70% */
   width: fit-content !important;
+  
+  /* \u5E7B\u60F3\u6B21\u5143\u548C\u7EC5\u58EB\u4E4B\u5EAD\u4F1A\u8BA9 a \u6807\u7B7E\u6362\u884C */
   display: inline-flex !important;
   line-height: 1;
+  
+  /* [[\u7EC5\u58EB\u4E4B\u5EAD]] \u9996\u9875\u6807\u9898\u7684 [[RJ \u7801]] \u4F1A\u53D8\u5F97\u5F88\u5927 */
+  font-size: inherit !important;
+  
+  /* [[\u5357+]] \u7684\u5E16\u5B50\u5217\u8868\u4F1A\u7ED9 a \u6807\u7B7E\u4E00\u4E2A\u53F3\u4FA7 [[margin]] */
+  margin: 0;
 }`;
 document.head.append(style);
 initPopup();
