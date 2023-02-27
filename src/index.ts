@@ -26,6 +26,8 @@ style.innerHTML = `
   
   /* [[南+]] 的帖子列表会给 a 标签一个右侧 [[margin]] */
   margin: 0;
+  
+  align-items: center;
 }`
 document.head.append(style)
 

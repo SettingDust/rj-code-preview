@@ -11,7 +11,7 @@
 // @name:zh-CN     DLSite_RJ_码预览
 // @namespace      SettingDust
 // @run-at         document-end
-// @version        3.0.8
+// @version        3.1.0
 // ==/UserScript==
 
 // src/fetch-rj.ts
@@ -485,14 +485,14 @@ var linkSelector = `a.${RJ_CODE_LINK_CLASS}`, template = `
     {{ #hasTags }}<p><span>\u5206\u7C7B\uFF1A</span>{{ #tags }}<span>{{ . }} </span>{{ /tags }}</p>{{ /hasTags }}
   </div>`, currentWork, currentRj;
 async function show(x, y) {
-  let popup = document.getElementById("rj-popup");
-  if (currentWork = await fetch_rj_default(currentRj), console.debug("[rj-code-preview/work]", currentWork), !hided) {
+  let popup = document.getElementById("rj-popup"), tempRj = currentRj, temp = await fetch_rj_default(tempRj);
+  if ((currentRj === tempRj || !currentWork) && (currentWork = temp), console.debug("[rj-code-preview/work]", currentWork), !hided && currentWork) {
     let rendered = mustache_default.render(template, currentWork, null, {
       escape: (it) => it
     });
     console.debug("[rj-code-preview/rendered]", rendered), popup.innerHTML = rendered, move(x, y);
     let img = popup.getElementsByTagName("img").item(0);
-    img.onload = () => move(x, y), img.onerror = () => move(x, y);
+    img.onload = () => setTimeout(() => move(x, y)), img.onerror = () => setTimeout(() => move(x, y));
   }
   hided = !1;
 }
@@ -502,14 +502,15 @@ function hide() {
 }
 function move(x, y) {
   let popup = document.getElementById("rj-popup");
-  popup.offsetWidth + x + 24 < window.innerWidth ? popup.style.left = x + 8 + "px" : popup.style.left = x - popup.offsetWidth - 8 + "px", popup.offsetHeight + y + 16 > window.innerHeight ? popup.style.top = window.innerHeight - popup.offsetHeight - 16 + "px" : popup.style.top = y + "px";
+  if (x + popup.offsetWidth + 16 < window.innerWidth)
+    popup.style.left = x + 8 + "px";
+  else {
+    let left = x - popup.offsetWidth - 8;
+    left < 0 ? popup.style.left = "8px" : popup.style.left = left + "px";
+  }
+  popup.offsetHeight + y + 16 > window.innerHeight ? popup.style.top = window.innerHeight - popup.offsetHeight - 16 + "px" : popup.style.top = y + 8 + "px";
 }
-delegate_it_default(
-  document.body,
-  linkSelector,
-  "mouseout",
-  () => hide()
-);
+delegate_it_default(document.body, linkSelector, "mouseout", () => hide());
 delegate_it_default(document.body, linkSelector, "mouseover", (event) => {
   currentRj = event.target.dataset[RJ_CODE_ATTRIBUTE], console.debug("[rj-code-preview/rj]", currentRj), currentRj && (hided = !1, show(event.clientX, event.clientY).then());
 });
@@ -524,8 +525,9 @@ function initPopup() {
   popup.id = "rj-popup", document.body.append(popup);
   let style2 = document.createElement("style");
   style2.innerHTML = `
-  #rj-popup {  
-    max-width: 360px;
+  #rj-popup {
+    max-width: min(calc(100vw - 16px), 360px);
+    max-height: calc(100vh - 32px);
     position: fixed;
     display: flex;
     flex-direction: column;
@@ -588,6 +590,8 @@ style.innerHTML = `
   
   /* [[\u5357+]] \u7684\u5E16\u5B50\u5217\u8868\u4F1A\u7ED9 a \u6807\u7B7E\u4E00\u4E2A\u53F3\u4FA7 [[margin]] */
   margin: 0;
+  
+  align-items: center;
 }`;
 document.head.append(style);
 initPopup();

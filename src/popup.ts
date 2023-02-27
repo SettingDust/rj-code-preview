@@ -29,9 +29,11 @@ let currentRj: string
 
 async function show(x: number, y: number) {
   const popup = document.getElementById('rj-popup')
-  currentWork = await fetchRj(currentRj)
+  const tempRj = currentRj
+  const temp = await fetchRj(tempRj)
+  if (currentRj === tempRj || !currentWork) currentWork = temp
   console.debug('[rj-code-preview/work]', currentWork)
-  if (!hided) {
+  if (!hided && currentWork) {
     const rendered = mustache.render(template, currentWork, null, {
       escape: (it) => it
     })
@@ -39,8 +41,8 @@ async function show(x: number, y: number) {
     popup.innerHTML = rendered
     move(x, y)
     const img = popup.getElementsByTagName('img').item(0)
-    img.onload = () => move(x, y)
-    img.onerror = () => move(x, y)
+    img.onload = () => setTimeout(() => move(x, y))
+    img.onerror = () => setTimeout(() => move(x, y))
   }
   hided = false
 }
@@ -56,12 +58,15 @@ function hide() {
 
 function move(x: number, y: number) {
   const popup = document.getElementById('rj-popup')
+
   // 如果右侧没有超出屏幕范围
-  if (popup.offsetWidth + x + 24 < window.innerWidth) {
+  if (x + popup.offsetWidth + 16 < window.innerWidth) {
     popup.style.left = x + 8 + 'px'
   } else {
     // 显示在左侧
-    popup.style.left = x - popup.offsetWidth - 8 + 'px'
+    const left = x - popup.offsetWidth - 8
+    if (left < 0) popup.style.left = '8px'
+    else popup.style.left = left + 'px'
   }
 
   // 如果下方超出屏幕范围
@@ -69,13 +74,11 @@ function move(x: number, y: number) {
     // 尽可能靠下
     popup.style.top = window.innerHeight - popup.offsetHeight - 16 + 'px'
   } else {
-    popup.style.top = y + 'px'
+    popup.style.top = y + 8 + 'px'
   }
 }
 
-delegate(document.body, linkSelector, 'mouseout', () =>
-  hide()
-)
+delegate(document.body, linkSelector, 'mouseout', () => hide())
 
 delegate(document.body, linkSelector, 'mouseover', (event) => {
   const element = <HTMLElement>event.target
@@ -96,8 +99,9 @@ export default function initPopup() {
   document.body.append(popup)
   const style = document.createElement('style')
   style.innerHTML = `
-  #rj-popup {  
-    max-width: 360px;
+  #rj-popup {
+    max-width: min(calc(100vw - 16px), 360px);
+    max-height: calc(100vh - 32px);
     position: fixed;
     display: flex;
     flex-direction: column;
